@@ -1,0 +1,70 @@
+﻿@page "/"
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Markdig
+
+<Layout>
+    <Header Style="background-color: white; padding: 8px">
+        <Title>Reality First</Title>
+    </Header>
+    <Content Style="margin: 24px; background-color: white; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; border-radius: 4px">
+        <div>
+            <Paragraph Strong>Загрузка файлов</Paragraph>
+            <div>
+                <Upload Name="files"
+                        Drag
+                        Multiple
+                        OnSingleCompleted="OnSingleCompleted"
+                        Action="https://matcher.ser13volk.me/candidate_match">
+                    <p class="ant-upload-drag-icon">
+                        <Icon Type="@IconType.Outline.Inbox"/>
+                    </p>
+                    <p class="ant-upload-text">Выберете или перетащите файлы для обработки</p>
+                    <p class="ant-upload-hint">
+                        Поддерживаются файлы форматов docx, pdf и txt
+                    </p>
+                </Upload>
+            </div>
+        </div>
+        <div>
+            <Paragraph Strong>Обработанные резюме</Paragraph>
+            @foreach (var response in _receivedDocuments)
+            {
+                <Descriptions Style="margin-top: 8px" Bordered Column="2">
+                    <DescriptionsItem Span="2" Title="ФИО">@response.Fio</DescriptionsItem>
+                    <DescriptionsItem Span="1" Title="Вакансия">@response.Vacancy</DescriptionsItem>
+                    <DescriptionsItem Span="1" Title="Вероятность">@response.Percentage</DescriptionsItem>
+                    <DescriptionsItem Span="2" Title="Объяснение">@((MarkupString)response.Explaining)</DescriptionsItem>
+                    <DescriptionsItem Span="2" Title="Рекомендации">@((MarkupString)response.Recommendations)</DescriptionsItem>
+                    <DescriptionsItem Span="1" Title="Телефон">@response.Phone</DescriptionsItem>
+                    <DescriptionsItem Span="1" Title="Email">@response.Email</DescriptionsItem>
+                </Descriptions>
+            }
+        </div>
+    </Content>
+</Layout>
+
+@code{
+    private int _currentState = 0;
+    private List<Dto> _receivedDocuments = new();
+
+    private async Task OnSingleCompleted(UploadInfo fileInfo)
+    {
+        var md = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+        var dto = JsonSerializer.Deserialize<Dto>(fileInfo.File.Response)!;
+        dto.Explaining = Markdown.ToHtml(dto.Explaining);
+        dto.Recommendations = Markdown.ToHtml(dto.Recommendations);
+        _receivedDocuments.Add(dto);
+    }
+
+    private class Dto
+    {
+        [JsonPropertyName("vacancy")]public string Vacancy {get;set;}
+        [JsonPropertyName("percentage")]public double Percentage {get;set;}
+        [JsonPropertyName("explaining")]public string Explaining {get;set;}
+        [JsonPropertyName("recommendations")]public string Recommendations {get;set;}
+        [JsonPropertyName("full_name")] public string Fio { get; set; }
+        [JsonPropertyName("email")] public string Email { get; set; }
+        [JsonPropertyName("phone")] public string Phone { get; set; }
+    }
+}

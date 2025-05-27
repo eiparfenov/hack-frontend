@@ -16,4 +16,9 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.2" PrivateAssets="all"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Include="wwwroot\Komolov.pdf" />
+      <None Include="wwwroot\Test.txt" />
+    </ItemGroup>
+
 </Project>

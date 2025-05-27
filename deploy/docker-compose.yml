@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  backend:
+    image: 'eiparfenov/some-hack'
+    environment:
+      ConnectionStrings__MlService: "https://matcher.ser13volk.me/"
+      ConnectionStrings__PostgresDb: "Host=db;Port=5432;Database=cp-hack-db;Username=postgres;Password=08f9d352-a042-4d9b-a186-3a787062cc76;Port=5432;"
+    networks:
+      hack_db_network:
+      hack_proxy_network:
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "08f9d352-a042-4d9b-a186-3a787062cc76"
+    networks:
+      hack_db_network:
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  proxy:
+    image: "caddy"
+    ports:
+      - '8080:80'
+    volumes:
+      - './Caddyfile:/etc/caddy/Caddyfile'
+    networks:
+      hack_proxy_network:
+  
+
+networks:
+  hack_db_network:
+  hack_proxy_network:

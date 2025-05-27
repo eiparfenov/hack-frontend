@@ -31,6 +31,7 @@ builder.Services.AddHangfire(opts =>
 });
 var dir = Directory.CreateTempSubdirectory().FullName;
 builder.Services.AddCors();
+builder.Services.AddSingleton(new DirProvider() { Dir = dir });
 var app = builder.Build();
 app.UseCors(opts => opts.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 var api = app.MapGroup("api");
@@ -60,7 +61,7 @@ api.MapPost("uploadText", async ([FromBody] UploadTextRequest request, [FromServ
     [FromServices] IBackgroundJobClient backgroundJobClient) =>
 {
     var fileId = UUIDNext.Uuid.NewSequential();
-    var filePath = Path.Combine(dir, "uploads", $"{request.Title}.txt");
+    var filePath = Path.Combine(dir, $"{request.Title}.txt");
     await File.WriteAllTextAsync(filePath, request.Text);
     var doc = new ReceivedDocument()
     {
@@ -198,3 +199,7 @@ public class UploadLinkRequest
     public required string Url { get; set; }
 }
 
+public class DirProvider
+{
+    public string Dir { get; set; }
+}

@@ -33,7 +33,14 @@ services:
       - './Caddyfile:/etc/caddy/Caddyfile'
     networks:
       hack_proxy_network:
-  
+  frontend:
+    image: midnightknight/hack_270525:latest
+    environment:
+      - URL_UPLOAD_TEXT=/api/uploadText
+      - URL_UPLOAD_LINK=/api/uploadByLink
+      - URL_UPLOAD_FILES=/api/uploadFiles
+      - URL_LIST_FILES=/api/listFiles
+    restart: always  
 
 networks:
   hack_db_network:

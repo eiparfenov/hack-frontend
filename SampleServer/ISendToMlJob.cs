@@ -11,13 +11,13 @@ public interface ISendToMlJob
 }
 
 [DisableConcurrentExecution(120)]
-public class SendToMlJob(AppDbContext db, IMlService mlService) : ISendToMlJob
+public class SendToMlJob(AppDbContext db, IMlService mlService, DirProvider dirProvider) : ISendToMlJob
 {
     [DisableConcurrentExecution(120)]
     public async Task SendToMlAsync(Guid documentId)
     {
         var doc = await db.ReceivedDocuments.SingleAsync(d => d.Id == documentId);
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", doc.Title.ToString());
+        var filePath = Path.Combine(dirProvider.Dir, doc.Title.ToString());
         doc.ProcessingState = ReceivedDocument.State.Processing;
         await db.SaveChangesAsync();
         
